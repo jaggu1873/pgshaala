@@ -3,10 +3,26 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 // ─── Zones ──────────────────────────────────────────
+/**
+ * EDUCATIONAL ANNOTATION: Core Networking Concepts & REST APIs
+ * 
+ * The functions in this file demonstrate how a network-enabled system 
+ * communicates using the HTTP protocol. Even though we use the Supabase 
+ * SDK wrapper, underlying requests still follow the Client-Server Architecture.
+ * 
+ * - Stateless Communication: Each request here (select, insert, update) is 
+ *   completely independent. The server doesn't retain session state between requests, 
+ *   relying on HTTP headers (like Authorization tokens) to authenticate.
+ * - JSON Data Exchange: Data sent to the server (e.g. creating a zone) 
+ *   and data received from the server (e.g. fetching zones) is serialized 
+ *   as JSON format for maximum interoperability.
+ */
 export function useZones() {
   return useQuery({
     queryKey: ['zones'],
     queryFn: async () => {
+      // REST API Equivalent: GET /rest/v1/zones
+      // This maps to a GET request in the Application Layer (HTTP) to retrieve data.
       const { data, error } = await supabase
         .from('zones')
         .select('*, agents:manager_id(id, name)')
@@ -23,6 +39,8 @@ export function useCreateZone() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (zone: { name: string; city?: string; areas: string[]; manager_id?: string; color?: string }) => {
+      // REST API Equivalent: POST /rest/v1/zones
+      // Sends a JSON payload in the request body to create a new resource.
       const { data, error } = await supabase.from('zones').insert(zone as any).select().single();
       if (error) throw error;
       return data;
@@ -35,7 +53,9 @@ export function useCreateZone() {
 export function useUpdateZone() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; [key: string]: any }) => {
+    mutationFn: async ({ id, ...updates }: { id: string;[key: string]: any }) => {
+      // REST API Equivalent: PATCH or PUT /rest/v1/zones?id=eq.{id}
+      // Modifies an existing resource by updating its state over the network.
       const { data, error } = await supabase.from('zones').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data;
@@ -76,7 +96,7 @@ export function useCreateTeamQueue() {
 export function useUpdateTeamQueue() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; [key: string]: any }) => {
+    mutationFn: async ({ id, ...updates }: { id: string;[key: string]: any }) => {
       const { data, error } = await supabase.from('team_queues').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data;
@@ -145,7 +165,7 @@ export function useCreateEscalation() {
 export function useUpdateEscalation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; [key: string]: any }) => {
+    mutationFn: async ({ id, ...updates }: { id: string;[key: string]: any }) => {
       const { data, error } = await supabase.from('escalations').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data;

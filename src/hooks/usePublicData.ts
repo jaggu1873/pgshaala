@@ -269,7 +269,7 @@ export function useRequestVisit() {
         }, { onConflict: 'phone' })
         .select()
         .single();
-      
+
       if (leadError) throw leadError;
 
       // 2. Create visit
@@ -283,7 +283,7 @@ export function useRequestVisit() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -311,7 +311,7 @@ export function useSendMessage() {
         }, { onConflict: 'phone' })
         .select()
         .single();
-      
+
       if (leadError) throw leadError;
 
       // 2. Create conversation entry
@@ -327,7 +327,7 @@ export function useSendMessage() {
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },

@@ -29,11 +29,16 @@ export const useLeads = () =>
         .from('leads')
         .select('*, agents(id, name), properties(id, name)')
         .order('created_at', { ascending: false })
-        .limit(200); // Limit full fetch to prevent browser hang
-      if (error) throw error;
+        .limit(200);
+        
+      if (error) {
+        console.error(error);
+        throw error;
+      }
+
       return data as LeadWithRelations[];
     },
-    staleTime: 5000, 
+    staleTime: 5000,
   });
 
 // Leads (paginated — used by Leads list page)
@@ -97,27 +102,7 @@ export const useUpdateLead = () => {
   });
 };
 
-// Agents
-export const useAgents = () =>
-  useQuery({
-    queryKey: ['agents'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('agents').select('*').eq('is_active', true).order('name');
-      if (error) throw error;
-      return data;
-    },
-  });
 
-// Properties
-export const useProperties = () =>
-  useQuery({
-    queryKey: ['properties'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('properties').select('*').eq('is_active', true).order('name');
-      if (error) throw error;
-      return data;
-    },
-  });
 
 // Visits
 export const useVisits = () =>
@@ -220,4 +205,34 @@ export const useAgentStats = () =>
       });
     },
     staleTime: 1000 * 60 * 2, // 2 minutes stale for performance metrics
+  });
+
+export const useAgents = () =>
+  useQuery({
+    queryKey: ['agents'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('agents')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+export const useProperties = () =>
+  useQuery({
+    queryKey: ['properties'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+      return data;
+    },
   });

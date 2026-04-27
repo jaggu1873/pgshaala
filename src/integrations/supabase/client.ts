@@ -8,6 +8,19 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * EDUCATIONAL ANNOTATION: TCP/IP Model & Network Layer
+ * 
+ * The `createClient` function below initializes the connection over the network.
+ * Data travels through the following layers (TCP/IP Model):
+ * 1. Application Layer (HTTP/WebSocket) -> Supabase uses REST (HTTP) for queries and WebSockets for real-time.
+ * 2. Transport Layer (TCP) -> Ensures packets of data arrive reliably and in order.
+ * 3. Network Layer (IP) -> Routes the data packets from the client's device to the Supabase servers.
+ * 
+ * The resulting HTTP requests are stateless, meaning each query or mutation made
+ * using this client contains all the necessary information (like API keys) to be 
+ * processed independently by the backend.
+ */
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: localStorage,
