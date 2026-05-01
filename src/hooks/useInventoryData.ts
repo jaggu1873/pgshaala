@@ -215,6 +215,22 @@ export function usePropertiesWithOwners() {
   });
 }
 
+export function useInventoryOSData() {
+  return useQuery({
+    queryKey: ['inventory-os'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*, rooms(*, beds(*))')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+    staleTime: 1000 * 60, // 1 minute
+  });
+}
+
 export function useUpdateProperty() {
   const qc = useQueryClient();
   return useMutation({

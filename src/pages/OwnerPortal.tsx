@@ -15,9 +15,10 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import {
   Building2, Bed, CheckCircle2, Clock, TrendingUp, Users,
-  LogOut, RefreshCw, AlertTriangle, IndianRupee, BarChart3, Home,
+  LogOut, RefreshCw, AlertTriangle, IndianRupee, BarChart3, Home, Edit3, CalendarDays, Lock
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useUpdateRoom } from '@/hooks/useInventoryData';
 
 // Hook: Fetch owner by user_id
 function useOwnerByUser(userId: string | undefined) {
@@ -85,6 +86,24 @@ function usePropertyEffort(propertyId: string | undefined) {
   });
 }
 
+// Hook: Visits for owner properties
+function useOwnerVisits(propertyIds: string[]) {
+  return useQuery({
+    queryKey: ['owner-visits', propertyIds],
+    enabled: propertyIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('visits')
+        .select('*, leads(name, phone), properties(name), rooms(room_number)')
+        .in('property_id', propertyIds)
+        .gte('scheduled_at', new Date().toISOString())
+        .order('scheduled_at', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 // Hook: Confirm room status
 function useConfirmRoom() {
   const qc = useQueryClient();
@@ -130,12 +149,17 @@ export default function OwnerPortal() {
   const { data: properties } = useOwnerProperties(owner?.id);
   const propertyIds = properties?.map((p: any) => p.id) || [];
   const { data: bookings } = useOwnerBookings(propertyIds);
+  const { data: visits } = useOwnerVisits(propertyIds);
   const confirmRoom = useConfirmRoom();
+  const updateRoom = useUpdateRoom();
 
   const [selectedProperty, setSelectedProperty] = useState<string>('all');
   const [confirmDialog, setConfirmDialog] = useState<any>(null);
   const [confirmStatus, setConfirmStatus] = useState('vacant');
   const [confirmNotes, setConfirmNotes] = useState('');
+  
+  const [editDialog, setEditDialog] = useState<any>(null);
+  const [editForm, setEditForm] = useState({ expected_rent: '', status: '', auto_locked: false });
 
   // If not logged in, redirect to owner auth
   useEffect(() => {
@@ -201,6 +225,17 @@ export default function OwnerPortal() {
     setConfirmNotes('');
   };
 
+  const handleEdit = async () => {
+    if (!editDialog) return;
+    await updateRoom.mutateAsync({
+      id: editDialog.id,
+      expected_rent: editForm.expected_rent ? parseFloat(editForm.expected_rent) : null,
+      status: editForm.status,
+      auto_locked: editForm.auto_locked,
+    });
+    setEditDialog(null);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -218,9 +253,6 @@ export default function OwnerPortal() {
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground hidden sm:block">Welcome, {owner.name}</span>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-                <Home size={16} className="mr-1" /> Home
-              </Button>
               <Button variant="outline" size="sm" onClick={() => signOut()}>
                 <LogOut size={14} className="mr-1" /> Sign Out
               </Button>
@@ -274,8 +306,9 @@ export default function OwnerPortal() {
 
         {/* Tabs */}
         <Tabs defaultValue="rooms" className="space-y-6">
-          <TabsList className="bg-secondary">
-            <TabsTrigger value="rooms">Rooms & Status</TabsTrigger>
+          <TabsList className="bg-secondary flex-wrap h-auto p-1">
+            <TabsTrigger value="rooms">Rooms & Pricing</TabsTrigger>
+            <TabsTrigger value="visits">Upcoming Visits</TabsTrigger>
             <TabsTrigger value="bookings">Bookings</TabsTrigger>
             <TabsTrigger value="effort">Effort Report</TabsTrigger>
           </TabsList>
@@ -313,6 +346,7 @@ export default function OwnerPortal() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
+                            {room.auto_locked && <Lock size={12} className="text-destructive" title="Locked" />}
                             <Badge className={`text-2xs border ${STATUS_COLORS[room.status] || 'bg-muted'}`}>
                               {room.status}
                             </Badge>
@@ -321,17 +355,34 @@ export default function OwnerPortal() {
                                 <Clock size={10} /> Needs confirmation
                               </Badge>
                             )}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="gap-1 text-xs"
-                              onClick={() => {
-                                setConfirmDialog(room);
-                                setConfirmStatus(room.status);
-                              }}
-                            >
-                              <RefreshCw size={12} /> Confirm
-                            </Button>
+                            <div className="flex gap-1 ml-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => {
+                                  setEditDialog(room);
+                                  setEditForm({ 
+                                    expected_rent: room.expected_rent?.toString() || '', 
+                                    status: room.status, 
+                                    auto_locked: room.auto_locked 
+                                  });
+                                }}
+                              >
+                                <Edit3 size={12} className="sm:mr-1" /> <span className="hidden sm:inline">Edit</span>
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => {
+                                  setConfirmDialog(room);
+                                  setConfirmStatus(room.status);
+                                }}
+                              >
+                                <RefreshCw size={12} className="sm:mr-1" /> <span className="hidden sm:inline">Confirm</span>
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -346,6 +397,42 @@ export default function OwnerPortal() {
                 <p>No properties found</p>
               </div>
             )}
+          </TabsContent>
+
+          {/* Visits Tab */}
+          <TabsContent value="visits">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2"><CalendarDays size={18} /> Upcoming Visits</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {visits?.length ? (
+                  <div className="space-y-3">
+                    {visits.map((v: any) => (
+                      <div key={v.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                        <div>
+                          <p className="font-medium text-sm">{(v.leads as any)?.name || 'Unknown'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {(v.properties as any)?.name} {v.rooms ? `· Room ${(v.rooms as any).room_number}` : ''}
+                          </p>
+                          <p className="text-xs font-medium text-blue-600 mt-1">
+                            Scheduled: {new Date(v.scheduled_at).toLocaleString()}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+                          Upcoming Tour
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <CalendarDays size={32} className="mx-auto mb-3 opacity-40" />
+                    <p className="text-sm">No upcoming visits scheduled</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Bookings Tab */}
@@ -446,6 +533,54 @@ export default function OwnerPortal() {
               className="bg-accent hover:bg-accent/90 text-accent-foreground"
             >
               {confirmRoom.isPending ? 'Confirming...' : 'Confirm Status'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Room Dialog */}
+      <Dialog open={!!editDialog} onOpenChange={(o) => !o && setEditDialog(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Edit Room Details</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label className="text-xs">Price / Expected Rent (₹)</Label>
+              <Input
+                type="number"
+                placeholder="e.g. 15000"
+                value={editForm.expected_rent}
+                onChange={(e) => setEditForm({ ...editForm, expected_rent: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Room Status</Label>
+              <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="vacant">Vacant</SelectItem>
+                  <SelectItem value="occupied">Occupied</SelectItem>
+                  <SelectItem value="vacating">Vacating</SelectItem>
+                  <SelectItem value="blocked">Blocked</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <input 
+                type="checkbox" 
+                id="lock-room" 
+                checked={editForm.auto_locked}
+                onChange={(e) => setEditForm({ ...editForm, auto_locked: e.target.checked })}
+                className="rounded border-border text-primary focus:ring-primary h-4 w-4"
+              />
+              <Label htmlFor="lock-room" className="text-sm font-medium cursor-pointer">Lock Room (Prevent bookings)</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialog(null)}>Cancel</Button>
+            <Button onClick={handleEdit} disabled={updateRoom.isPending}>
+              {updateRoom.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </DialogContent>
