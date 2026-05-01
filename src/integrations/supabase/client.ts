@@ -2,6 +2,24 @@
  * Standard Supabase Mock
  * Replaced by MongoDB Analytical Engine.
  * Plain object to avoid Proxy-related recursion issues.
+ * 
+ * ==========================================
+ * EDUCATIONAL ANNOTATION: Core Networking Concepts
+ * ==========================================
+ * REST APIs: The system exposes endpoints (GET, POST, PUT, DELETE) to perform operations.
+ * This demonstrates how real-world applications communicate over the web.
+ * 
+ * TCP/IP Model:
+ * Explains how data travels through layers:
+ * - Application Layer -> HTTP (REST)
+ * - Transport Layer -> TCP
+ * - Network Layer -> IP
+ * 
+ * Stateless Communication:
+ * Each request is independent, which is a key principle in scalable systems.
+ * 
+ * JSON Data Exchange:
+ * Data is transmitted in a structured format, enabling interoperability.
  */
 
 const mockResponse = Promise.resolve({ data: [], error: null, count: 0 });
