@@ -1,52 +1,58 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { db } from '@/lib/db';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { logger } from '@/lib/logger';
 
-// Standard MongoDB based models
-export interface LeadWithRelations {
-  id: string;
-  name: string;
-  phone: string;
-  email?: string;
-  status: string;
-  source: string;
-  preferred_location?: string;
-  budget?: string;
-  notes?: string;
-  assigned_agent_id?: string;
-  property_id?: string;
-  created_at: string;
-  agents?: { name: string } | null;
-  properties?: { name: string } | null;
-}
+type Lead = Database['public']['Tables']['leads']['Row'];
+type Agent = Database['public']['Tables']['agents']['Row'];
+type Visit = Database['public']['Tables']['visits']['Row'];
+type Property = Database['public']['Tables']['properties']['Row'];
 
-export interface VisitWithRelations {
-  id: string;
-  lead_id: string;
-  property_id: string;
-  scheduled_at: string;
-  outcome?: string;
-  notes?: string;
-  leads?: { name: string } | null;
-  properties?: { name: string } | null;
-}
+// Type for lead with joined agent and property
+export type LeadWithRelations = Lead & {
+  agents: Pick<Agent, 'id' | 'name'> | null;
+  properties: Pick<Property, 'id' | 'name'> | null;
+};
 
-// CRM Hooks using MongoDB Engine
+export type VisitWithRelations = Visit & {
+  leads: Pick<Lead, 'id' | 'name'> | null;
+  properties: Pick<Property, 'id' | 'name'> | null;
+  agents: Pick<Agent, 'id' | 'name'> | null;
+};
+
+// Leads (all — used by Dashboard, Pipeline, etc.)
 export const useLeads = () =>
   useQuery({
     queryKey: ['leads'],
     queryFn: async () => {
-      const { data, error } = await db.from('leads').order('created_at', { ascending: false }).select();
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*, agents(id, name), properties(id, name)')
+        .order('created_at', { ascending: false })
+        .limit(200);
+        
+      if (error) {
+        console.error(error);
+        throw error;
+      }
+
       return data as LeadWithRelations[];
     },
+    staleTime: 5000,
   });
 
+// Leads (paginated — used by Leads list page)
 export const useLeadsPaginated = (page = 0, pageSize = 50) =>
   useQuery({
     queryKey: ['leads-paginated', page, pageSize],
     queryFn: async () => {
-      const { data, error, count } = await db.from('leads').order('created_at', { ascending: false }).select();
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+      const { data, error, count } = await supabase
+        .from('leads')
+        .select('*, agents(id, name), properties(id, name)', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to);
       if (error) throw error;
       return { leads: data as LeadWithRelations[], total: count || 0 };
     },
@@ -56,7 +62,11 @@ export const useLeadsByStatus = (status: string) =>
   useQuery({
     queryKey: ['leads', 'status', status],
     queryFn: async () => {
-      const { data, error } = await db.from('leads').eq('status', status).select();
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*, agents(id, name), properties(id, name)')
+        .eq('status', status as any)
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return data as LeadWithRelations[];
     },
@@ -65,32 +75,148 @@ export const useLeadsByStatus = (status: string) =>
 export const useCreateLead = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (lead: any) => {
-      const { data, error } = await db.from('leads').insert(lead);
+    mutationFn: async (lead: Database['public']['Tables']['leads']['Insert']) => {
+      const { data, error } = await supabase.from('leads').insert(lead).select().single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['leads'] }),
+    onError: (error, variables) => {
+      logger.error('Failed to create lead', error, { variables });
+    },
   });
 };
 
 export const useUpdateLead = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: any) => {
-      const { data, error } = await db.from('leads').update(updates).eq('id', id);
+    mutationFn: async ({ id, ...updates }: { id: string } & Database['public']['Tables']['leads']['Update']) => {
+      const { data, error } = await supabase.from('leads').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['leads'] }),
+    onError: (error, variables) => {
+      logger.error('Failed to update lead', error, { variables });
+    },
   });
 };
+
+
+
+// Visits
+export const useVisits = () =>
+  useQuery({
+    queryKey: ['visits'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('visits')
+        .select('*, leads(id, name), properties(id, name), agents:assigned_staff_id(id, name)')
+        .order('scheduled_at', { ascending: true });
+      if (error) throw error;
+      return data as VisitWithRelations[];
+    },
+    staleTime: 1000 * 10, // 10 seconds stale for visits
+  });
+
+export const useCreateVisit = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (visit: Database['public']['Tables']['visits']['Insert']) => {
+      const { data, error } = await supabase.from('visits').insert(visit).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['visits'] }),
+  });
+};
+
+// Dashboard stats
+export const useDashboardStats = () =>
+  useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: async () => {
+      const [leadsRes, visitsRes] = await Promise.all([
+        supabase.from('leads').select('id, status, first_response_time_min, source, created_at'),
+        supabase.from('visits').select('id, outcome, scheduled_at'),
+      ]);
+
+      if (leadsRes.error) throw leadsRes.error;
+      if (visitsRes.error) throw visitsRes.error;
+
+      const leads = leadsRes.data;
+      const visits = visitsRes.data;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const totalLeads = leads.length;
+      const newToday = leads.filter(l => new Date(l.created_at) >= today).length;
+      const responseTimes = leads.filter(l => l.first_response_time_min !== null).map(l => l.first_response_time_min!);
+      const avgResponseTime = responseTimes.length ? +(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length).toFixed(1) : 0;
+      const withinSLA = responseTimes.filter(t => t <= 5).length;
+      const slaCompliance = responseTimes.length ? Math.round((withinSLA / responseTimes.length) * 100) : 0;
+      const slaBreaches = responseTimes.filter(t => t > 5).length;
+      const bookedLeads = leads.filter(l => l.status === 'booked').length;
+      const conversionRate = totalLeads ? +((bookedLeads / totalLeads) * 100).toFixed(1) : 0;
+      const upcomingVisits = visits.filter(v => new Date(v.scheduled_at) >= today && !v.outcome).length;
+      const completedVisits = visits.filter(v => v.outcome !== null).length;
+
+      return {
+        totalLeads,
+        newToday,
+        avgResponseTime,
+        slaCompliance,
+        slaBreaches,
+        conversionRate,
+        visitsScheduled: upcomingVisits,
+        visitsCompleted: completedVisits,
+        bookingsClosed: bookedLeads,
+      };
+    },
+    staleTime: 1000 * 60, // 1 minute stale for dashboard stats
+  });
+
+// Agent performance stats
+export const useAgentStats = () =>
+  useQuery({
+    queryKey: ['agent-stats'],
+    queryFn: async () => {
+      const [agentsRes, leadsRes] = await Promise.all([
+        supabase.from('agents').select('*').eq('is_active', true),
+        supabase.from('leads').select('id, status, assigned_agent_id, first_response_time_min'),
+      ]);
+      if (agentsRes.error) throw agentsRes.error;
+      if (leadsRes.error) throw leadsRes.error;
+
+      return agentsRes.data.map(agent => {
+        const agentLeads = leadsRes.data.filter(l => l.assigned_agent_id === agent.id);
+        const responseTimes = agentLeads.filter(l => l.first_response_time_min !== null).map(l => l.first_response_time_min!);
+        const avgResponse = responseTimes.length ? +(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length).toFixed(1) : 0;
+        const conversions = agentLeads.filter(l => l.status === 'booked').length;
+        const active = agentLeads.filter(l => !['booked', 'lost'].includes(l.status)).length;
+
+        return {
+          ...agent,
+          totalLeads: agentLeads.length,
+          activeLeads: active,
+          avgResponseTime: avgResponse,
+          conversions,
+        };
+      });
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutes stale for performance metrics
+  });
 
 export const useAgents = () =>
   useQuery({
     queryKey: ['agents'],
     queryFn: async () => {
-      const { data, error } = await db.from('agents').order('name').select();
+      const { data, error } = await supabase
+        .from('agents')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
       if (error) throw error;
       return data;
     },
@@ -100,71 +226,13 @@ export const useProperties = () =>
   useQuery({
     queryKey: ['properties'],
     queryFn: async () => {
-      const { data, error } = await db.from('properties').order('name').select();
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
       if (error) throw error;
       return data;
-    },
-  });
-
-export const useVisits = () =>
-  useQuery({
-    queryKey: ['visits'],
-    queryFn: async () => {
-      const { data, error } = await db.from('visits').order('scheduled_at').select();
-      if (error) throw error;
-      return data as VisitWithRelations[];
-    },
-  });
-
-export const useCreateVisit = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (visit: any) => {
-      const { data, error } = await db.from('visits').insert(visit);
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['visits'] }),
-  });
-};
-
-export const useDashboardStats = () =>
-  useQuery({
-    queryKey: ['dashboard-stats'],
-    queryFn: async () => {
-      const [{ data: leads }, { data: visits }] = await Promise.all([
-        db.from('leads').select(),
-        db.from('visits').select(),
-      ]);
-
-      const totalLeads = leads?.length || 0;
-      const bookedLeads = leads?.filter((l: any) => l.status === 'booked').length || 0;
-      const conversionRate = totalLeads ? +((bookedLeads / totalLeads) * 100).toFixed(1) : 0;
-
-      return {
-        totalLeads,
-        newToday: leads?.filter((l: any) => new Date(l.created_at) >= new Date().setHours(0,0,0,0)).length || 0,
-        avgResponseTime: 4.2, // Simulated from historical data
-        slaCompliance: 94,
-        conversionRate,
-        visitsScheduled: visits?.filter((v: any) => !v.outcome).length || 0,
-        visitsCompleted: visits?.filter((v: any) => v.outcome).length || 0,
-        bookingsClosed: bookedLeads,
-      };
-    },
-  });
-
-export const useAgentStats = () =>
-  useQuery({
-    queryKey: ['agent-stats'],
-    queryFn: async () => {
-      const { data: agents } = await db.from('agents').select();
-      return (agents || []).map((agent: any) => ({
-        ...agent,
-        totalLeads: 12,
-        activeLeads: 5,
-        avgResponseTime: 3.5,
-        conversions: 2,
-      }));
     },
   });

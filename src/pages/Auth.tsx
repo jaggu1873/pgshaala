@@ -1,164 +1,250 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { lovable } from '@/integrations/lovable/index';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { logger } from '@/lib/logger';
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { user, isOwner, role, loading: authLoading, signIn } = useAuth();
+  const { user, isOwner, role, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
-  const [email, setEmail] = useState('demo@pgshaala.com');
+  const [email, setEmail] = useState('demo@gharpayy.com');
   const [password, setPassword] = useState('demo1234');
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Redirect authenticated users to relevant portal
   useEffect(() => {
     if (!authLoading && user) {
       if (isOwner) {
         navigate('/owner-portal', { replace: true });
       } else {
+        // Redirect to dashboard by default if logged in
+        // ProtectedRoute will handle role-based redirection later if needed
         navigate('/dashboard', { replace: true });
       }
     }
-  }, [authLoading, user, isOwner, navigate]);
+  }, [authLoading, user, isOwner, role, navigate]);
+
+  // Auto-create demo account on first visit
+  const ensureDemoAccount = async () => {
+    const { error } = await supabase.auth.signUp({
+      email: 'demo@gharpayy.com',
+      password: 'demo1234',
+      options: { data: { full_name: 'Demo User' } },
+    });
+    // Ignore if already exists
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await signIn(email, password);
+    // Ensure demo account exists first
+    if (email === 'demo@gharpayy.com') await ensureDemoAccount();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error(error.message);
+      logger.error('Login failed', error, { email });
     } else {
       toast.success('Welcome back!');
+      logger.info('User logged in', { email });
     }
     setLoading(false);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.info('Sign up is currently disabled. Use demo account.');
+    if (!fullName.trim()) { toast.error('Full name is required'); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    if (error) {
+      toast.error(error.message);
+      logger.error('Signup failed', error, { email });
+    } else {
+      toast.success('Check your email to verify your account!');
+      logger.info('User signed up', { email });
+    }
+    setLoading(false);
   };
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.info('Password reset is currently disabled.');
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) toast.error(error.message);
+    else toast.success('Password reset link sent to your email');
+    setLoading(false);
+  };
+
+  const handleGoogle = async () => {
+    setLoading(true);
+    const { error } = await lovable.auth.signInWithOAuth('google', {
+      redirect_uri: window.location.origin,
+    });
+    if (error) toast.error(error instanceof Error ? error.message : 'Google sign-in failed');
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-background flex font-body">
-      {/* Left side: Visual + branding */}
-      <div className="hidden lg:flex w-1/2 relative overflow-hidden flex-col justify-between p-16 bg-background">
-        {/* Soft animated glows */}
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-purple-500/20 blur-[100px] animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-blue-500/20 blur-[100px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
-
+    <div className="min-h-screen bg-background flex">
+      {/* Left branding panel */}
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden flex-col justify-between p-12" style={{ background: 'hsl(220, 16%, 8%)' }}>
         <div className="relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <span className="text-white font-display font-black text-xl">PG</span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
+              <span className="text-accent-foreground font-display font-bold text-lg">G</span>
             </div>
             <div>
-              <h1 className="font-display font-bold text-2xl text-foreground tracking-tight">PG SHAALA</h1>
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.3em]">India's Smartest PG Platform</p>
+              <h1 className="font-display font-bold text-lg text-white tracking-tight">Gharpayy</h1>
+              <p className="text-[11px] text-white/40">Lead Management CRM</p>
             </div>
           </div>
         </div>
 
-        <motion.div className="relative z-10 max-w-xl" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }}>
-          <h2 className="font-display text-5xl font-bold text-foreground leading-[1.2] mb-6 tracking-tight">
-            Find Your Perfect PG, <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-500">Effortlessly.</span>
+        <motion.div
+          className="relative z-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: [0.32, 0.72, 0, 1] }}
+        >
+          <h2 className="font-display text-2xl font-bold text-white leading-tight mb-4 tracking-tight">
+            Every lead tracked.<br />Every deal closed.
           </h2>
-          <p className="text-muted-foreground text-lg leading-relaxed max-w-md font-medium">
-            Smart matching. Verified properties. Seamless booking. Experience the new standard of city living.
+          <p className="text-white/40 text-sm max-w-md leading-relaxed">
+            Automated follow-ups, AI scoring, and real-time pipeline visibility for your entire team.
           </p>
-        </motion.div>
-
-        <div className="relative z-10 flex items-center justify-between">
-          <p className="text-[11px] font-medium text-muted-foreground/50">© 2026 PG Shaala. All rights reserved.</p>
-          <div className="flex gap-6">
-            {['Privacy', 'Terms', 'Contact'].map(item => (
-              <span key={item} className="text-[11px] font-medium text-muted-foreground/50 hover:text-foreground transition-colors cursor-pointer">{item}</span>
+          <div className="grid grid-cols-3 gap-4 mt-10">
+            {[
+              { label: 'Response Time', value: '<5 min' },
+              { label: 'Lead Scoring', value: 'AI' },
+              { label: 'Pipeline Stages', value: '8' },
+            ].map(s => (
+              <div key={s.label} className="rounded-2xl p-4 border border-white/[0.06]" style={{ background: 'hsl(220, 14%, 12%)' }}>
+                <p className="font-display font-bold text-white text-base">{s.value}</p>
+                <p className="text-[10px] text-white/30 mt-1">{s.label}</p>
+              </div>
             ))}
           </div>
-        </div>
+        </motion.div>
+
+        <p className="relative z-10 text-[10px] text-white/20">© 2026 Gharpayy. All rights reserved.</p>
+
+        {/* Subtle gradient orb */}
+        <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, hsl(25, 95%, 53%), transparent)' }} />
       </div>
 
-      {/* Right side: Login form */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-[#0f172a] relative overflow-hidden">
-        {/* Subtle background glow for the right panel */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-b from-purple-500/5 to-blue-500/5 pointer-events-none" />
-
-        <motion.div 
-          className="w-full max-w-[420px] relative z-10 bg-[#111827] rounded-2xl border border-white/10 p-8 shadow-2xl" 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ duration: 0.5, delay: 0.1 }}
+      {/* Right auth form */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <motion.div
+          className="w-full max-w-[380px]"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
         >
-          <div className="text-center mb-8">
-            <h2 className="font-display font-bold text-2xl text-white mb-2 tracking-tight">
-              Welcome Back 👋
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Login to continue your search
-            </p>
+          <div className="lg:hidden flex items-center gap-2.5 mb-10">
+            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center">
+              <span className="text-accent-foreground font-display font-bold">G</span>
+            </div>
+            <h1 className="font-display font-bold text-base text-foreground tracking-tight">Gharpayy</h1>
           </div>
 
-          <form onSubmit={mode === 'login' ? handleLogin : handleSignup} className="space-y-5">
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-white/80 ml-1">Email Address</Label>
-              <div className="relative group">
-                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-purple-400 transition-colors" />
-                <Input 
-                  className="pl-11 h-12 rounded-xl bg-white/5 border-white/10 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all text-white placeholder:text-white/20" 
-                  type="email" 
-                  placeholder="you@example.com" 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
-                  required 
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-center ml-1">
-                <Label className="text-sm font-medium text-white/80">Password</Label>
-                <button type="button" className="text-xs text-purple-400 hover:text-purple-300 transition-colors font-medium" onClick={handleForgot}>Forgot password?</button>
-              </div>
-              <div className="relative group">
-                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-purple-400 transition-colors" />
-                <Input 
-                  className="pl-11 pr-11 h-12 rounded-xl bg-white/5 border-white/10 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all text-white placeholder:text-white/20" 
-                  type={showPassword ? 'text' : 'password'} 
-                  placeholder="••••••••" 
-                  value={password} 
-                  onChange={e => setPassword(e.target.value)} 
-                  required 
-                />
-                <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white transition-colors" onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
+          <h2 className="font-display font-bold text-xl text-foreground mb-1 tracking-tight">
+            {mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create account' : 'Reset password'}
+          </h2>
+          <p className="text-xs text-muted-foreground mb-8">
+            {mode === 'login' ? 'Sign in to your CRM dashboard' : mode === 'signup' ? 'Join your team on Gharpayy' : 'Enter your email to reset password'}
+          </p>
 
-            <Button 
-              type="submit" 
-              className="w-full h-12 rounded-xl bg-gradient-to-r from-purple-500 to-blue-600 text-white font-semibold text-sm hover:opacity-90 shadow-lg shadow-purple-500/25 transition-all active:scale-[0.98] border-0" 
-              disabled={loading}
-            >
-              {loading ? 'Logging in...' : 'Sign In'}
-            </Button>
-            
-            <div className="text-center pt-2">
-              <p className="text-xs text-muted-foreground">
-                Don't have an account? <button type="button" className="text-purple-400 hover:text-purple-300 font-medium transition-colors" onClick={(e) => { e.preventDefault(); handleSignup(e as any); }}>Sign up</button>
-              </p>
+          {mode !== 'forgot' && (
+            <>
+              <Button variant="outline" className="w-full gap-2 mb-5 h-11 rounded-xl" onClick={handleGoogle} disabled={loading}>
+                <svg className="w-4 h-4" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Continue with Google
+              </Button>
+              <div className="relative mb-5">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+                <div className="relative flex justify-center text-2xs"><span className="bg-background px-3 text-muted-foreground">or</span></div>
+              </div>
+            </>
+          )}
+
+          <form onSubmit={mode === 'login' ? handleLogin : mode === 'signup' ? handleSignup : handleForgot} className="space-y-4">
+            {mode === 'signup' && (
+              <div className="space-y-1.5">
+                <Label className="text-2xs">Full Name</Label>
+                <div className="relative">
+                  <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input className="pl-9 h-11 rounded-xl" placeholder="Your full name" value={fullName} onChange={e => setFullName(e.target.value)} />
+                </div>
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Label className="text-2xs">Email</Label>
+              <div className="relative">
+                <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input className="pl-9 h-11 rounded-xl" type="email" placeholder="you@company.com" value={email} onChange={e => setEmail(e.target.value)} required />
+              </div>
             </div>
+            {mode !== 'forgot' && (
+              <div className="space-y-1.5">
+                <Label className="text-2xs">Password</Label>
+                <div className="relative">
+                  <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input className="pl-9 pr-9 h-11 rounded-xl" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
+                  <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {mode === 'login' && (
+              <button type="button" onClick={() => setMode('forgot')} className="text-2xs text-accent hover:underline">
+                Forgot password?
+              </button>
+            )}
+
+            <Button type="submit" className="w-full h-11 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
+              {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Send Reset Link'}
+            </Button>
           </form>
+
+          <p className="text-2xs text-center text-muted-foreground mt-8">
+            {mode === 'login' ? (
+              <>Don't have an account? <button onClick={() => setMode('signup')} className="text-accent hover:underline">Sign up</button></>
+            ) : (
+              <>Already have an account? <button onClick={() => setMode('login')} className="text-accent hover:underline">Sign in</button></>
+            )}
+          </p>
+
+          <div className="mt-4 pt-4 border-t border-border text-center">
+            <p className="text-2xs text-muted-foreground">
+              Are you a property owner?{' '}
+              <button
+                onClick={() => navigate('/owner-login')}
+                className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
+              >
+                Owner Login →
+              </button>
+            </p>
+          </div>
         </motion.div>
       </div>
     </div>
