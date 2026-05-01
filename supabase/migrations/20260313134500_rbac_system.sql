@@ -96,7 +96,7 @@ DO $$
 DECLARE
   demo_user_id uuid;
 BEGIN
-  SELECT id INTO demo_user_id FROM auth.users WHERE email = 'demo@gharpayy.com' LIMIT 1;
+  SELECT id INTO demo_user_id FROM auth.users WHERE email = 'demo@pgshaala.com' LIMIT 1;
   IF demo_user_id IS NOT NULL THEN
     INSERT INTO public.user_roles (user_id, role)
     VALUES (demo_user_id, 'admin')

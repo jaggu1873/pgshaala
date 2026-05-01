@@ -1,7 +1,7 @@
-# Gharpayy Dashboard
+# PG Shaala Dashboard
 
 ## Overview
-Gharpayy Dashboard is a comprehensive administration and management system built for Gharpayy. It provides a centralized web-based application to handle various operational aspects, including leads, inventory, properties, bookings, and user analytics.
+PG Shaala Dashboard is a comprehensive administration and management system built for PG Shaala. It provides a centralized web-based application to handle various operational aspects, including leads, inventory, properties, bookings, and user analytics.
 
 ## Features
 - **Authentication & Authorization**: Secure login, signup, and password reset functionalities.
@@ -34,7 +34,7 @@ git clone <YOUR_GIT_URL>
 
 ### 2. Navigate to the Project Directory
 ```sh
-cd gharpayy-flow
+cd pgshaala-flow
 ```
 
 ### 3. Install Dependencies

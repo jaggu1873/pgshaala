@@ -29,6 +29,8 @@ import Auth from "./pages/Auth";
 import OwnerAuth from "./pages/OwnerAuth";
 import ResetPassword from "./pages/ResetPassword";
 import OwnerPortal from "./pages/OwnerPortal";
+import IoTDashboard from "./pages/IoTDashboard";
+import MathModels from "./pages/MathModels";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -42,10 +44,12 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
+const App = () => {
+  console.log('App: Rendering...');
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -81,12 +85,15 @@ const App = () => (
             <Route path="/matching" element={<ProtectedRoute requiredRole="manager"><Matching /></ProtectedRoute>} />
             <Route path="/bookings" element={<ProtectedRoute><Bookings /></ProtectedRoute>} />
             <Route path="/zones" element={<ProtectedRoute requiredRole="admin"><ZoneManagement /></ProtectedRoute>} />
+            <Route path="/iot" element={<ProtectedRoute><IoTDashboard /></ProtectedRoute>} />
+            <Route path="/math" element={<ProtectedRoute><MathModels /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

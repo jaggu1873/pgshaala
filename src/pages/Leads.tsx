@@ -6,7 +6,7 @@ import { useLeadsPaginated } from '@/hooks/useCrmData';
 import { useBulkUpdateLeads, useDeleteLeads } from '@/hooks/useLeadDetails';
 import { useUpdateLead, useAgents, type LeadWithRelations } from '@/hooks/useCrmData';
 import { PIPELINE_STAGES, SOURCE_LABELS } from '@/types/crm';
-import { Filter, Download, Star, Trash2, PhoneCall, MessageCircle } from 'lucide-react';
+import { Filter, Download, Star, Trash2, PhoneCall, MessageCircle, User, IndianRupee } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -58,9 +58,9 @@ const Leads = () => {
       switch (sortBy) {
         case 'newest': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         case 'oldest': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-        case 'score_high': return (b.lead_score ?? 0) - (a.lead_score ?? 0);
-        case 'score_low': return (a.lead_score ?? 0) - (b.lead_score ?? 0);
-        case 'response': return (a.first_response_time_min ?? 999) - (b.first_response_time_min ?? 999);
+        case 'score_high': return ((b as any).lead_score ?? 0) - ((a as any).lead_score ?? 0);
+        case 'score_low': return ((a as any).lead_score ?? 0) - ((b as any).lead_score ?? 0);
+        case 'response': return ((a as any).first_response_time_min ?? 999) - ((b as any).first_response_time_min ?? 999);
         default: return 0;
       }
     });
@@ -114,7 +114,7 @@ const Leads = () => {
   const handleExport = () => {
     const csv = [
       ['Name', 'Phone', 'Email', 'Source', 'Status', 'Agent', 'Location', 'Budget', 'Score'].join(','),
-      ...filtered.map(l => [l.name, l.phone, l.email || '', l.source, l.status, l.agents?.name || '', l.preferred_location || '', l.budget || '', l.lead_score ?? 0].join(','))
+      ...filtered.map(l => [l.name, l.phone, l.email || '', l.source, l.status, l.agents?.name || '', l.preferred_location || '', l.budget || '', (l as any).lead_score ?? 0].join(','))
     ].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -194,66 +194,103 @@ const Leads = () => {
         </motion.div>
       )}
 
-      {/* Table */}
-      <div className="kpi-card overflow-hidden p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-border bg-secondary/30">
-                <th className="px-4 py-3.5 w-8">
-                  <Checkbox checked={selectedIds.size === filtered.length && filtered.length > 0} onCheckedChange={toggleAll} />
-                </th>
-                <th className="text-left px-4 py-3.5 text-2xs font-medium text-muted-foreground">Name</th>
-                <th className="text-left px-4 py-3.5 text-2xs font-medium text-muted-foreground">Contact</th>
-                <th className="text-left px-4 py-3.5 text-2xs font-medium text-muted-foreground">Source</th>
-                <th className="text-left px-4 py-3.5 text-2xs font-medium text-muted-foreground">Status</th>
-                <th className="text-left px-4 py-3.5 text-2xs font-medium text-muted-foreground">Score</th>
-                <th className="text-left px-4 py-3.5 text-2xs font-medium text-muted-foreground">Agent</th>
-                <th className="text-left px-4 py-3.5 text-2xs font-medium text-muted-foreground">Location</th>
-                <th className="text-left px-4 py-3.5 text-2xs font-medium text-muted-foreground">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(lead => (
-                <tr key={lead.id} className="border-b border-border last:border-0 hover:bg-secondary/20 transition-colors cursor-pointer group"
-                  onClick={() => openDetail(lead)}>
-                  <td className="px-4 py-3.5" onClick={e => e.stopPropagation()}>
-                    <Checkbox checked={selectedIds.has(lead.id)} onCheckedChange={() => toggleSelect(lead.id)} />
-                  </td>
-                  <td className="px-4 py-3.5 font-medium text-foreground">{lead.name}</td>
-                  <td className="px-4 py-3.5 text-2xs text-muted-foreground">{lead.phone}</td>
-                  <td className="px-4 py-3.5 text-2xs text-muted-foreground">{SOURCE_LABELS[lead.source as keyof typeof SOURCE_LABELS] || lead.source}</td>
-                  <td className="px-4 py-3.5" onClick={e => e.stopPropagation()}>
+      {/* Cards List */}
+      <div className="space-y-3">
+        {/* Select All Header (replaces table header checkbox) */}
+        {filtered.length > 0 && (
+          <div className="flex items-center px-5 py-2">
+            <Checkbox checked={selectedIds.size === filtered.length} onCheckedChange={toggleAll} />
+            <span className="text-xs text-muted-foreground ml-3">Select All</span>
+          </div>
+        )}
+
+        {filtered.map(lead => {
+          const isSelected = selectedLead?.id === lead.id;
+          const isChecked = selectedIds.has(lead.id);
+          const stage = PIPELINE_STAGES.find(s => s.key === lead.status);
+          
+          return (
+            <div 
+              key={lead.id} 
+              className={`relative overflow-hidden rounded-xl border cursor-pointer transition-all hover:bg-white/[0.02] ${isSelected ? 'bg-[#1e293b] border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]' : 'bg-[#111827] border-white/10'}`}
+              onClick={() => openDetail(lead)}
+            >
+              {/* Left accent bar */}
+              <div className={`absolute left-0 top-0 bottom-0 w-1 ${stage?.color || 'bg-border'}`} />
+
+              <div className="flex items-center gap-4 ml-1 p-4">
+                <div onClick={e => e.stopPropagation()}>
+                  <Checkbox checked={isChecked} onCheckedChange={() => toggleSelect(lead.id)} />
+                </div>
+                
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                  {/* Name & Contact */}
+                  <div className="md:col-span-3 flex flex-col">
+                    <span className="font-bold text-foreground text-sm tracking-tight">{lead.name}</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-muted-foreground">{lead.phone}</span>
+                      {lead.preferred_location && (
+                        <>
+                          <span className="text-xs text-muted-foreground/30">•</span>
+                          <span className="text-xs text-muted-foreground truncate max-w-[100px]">{lead.preferred_location}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Status */}
+                  <div className="md:col-span-2" onClick={e => e.stopPropagation()}>
                     <select
                       value={lead.status}
                       onChange={e => handleInlineStatus(lead.id, e.target.value)}
-                      className="text-[10px] bg-transparent border border-transparent hover:border-border rounded-lg px-1.5 py-1 text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-ring/30 transition-colors"
+                      className="text-xs font-semibold rounded-full px-3 py-1.5 cursor-pointer focus:outline-none transition-colors border border-white/5 bg-white/5 hover:bg-white/10"
+                      style={{ color: 'var(--foreground)' }}
                     >
-                      {PIPELINE_STAGES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                      {PIPELINE_STAGES.map(s => <option key={s.key} value={s.key} className="bg-[#111827] text-white">{s.label}</option>)}
                     </select>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span className={`text-2xs font-semibold flex items-center gap-1 ${scoreColor(lead.lead_score ?? 0)}`}>
-                      <Star size={10} /> {lead.lead_score ?? 0}
+                  </div>
+
+                  {/* Score & Source */}
+                  <div className="md:col-span-2 flex flex-col">
+                    <span className={`text-xs font-semibold flex items-center gap-1 ${scoreColor((lead as any).lead_score ?? 0)}`}>
+                      <Star size={12} className={scoreColor((lead as any).lead_score ?? 0).includes('success') ? 'fill-emerald-500 text-emerald-500' : ''} /> {(lead as any).lead_score ?? 0} Score
                     </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-2xs text-muted-foreground">{lead.agents?.name || 'Unassigned'}</td>
-                  <td className="px-4 py-3.5 text-2xs text-muted-foreground">{lead.preferred_location || '—'}</td>
-                  <td className="px-4 py-3.5" onClick={e => e.stopPropagation()}>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <a href={`tel:${lead.phone}`} className="p-1.5 rounded-lg hover:bg-secondary transition-colors" title="Call">
-                        <PhoneCall size={12} className="text-muted-foreground" />
-                      </a>
-                      <a href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg hover:bg-secondary transition-colors" title="WhatsApp">
-                        <MessageCircle size={12} className="text-success" />
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <span className="text-xs text-muted-foreground mt-1 capitalize">{SOURCE_LABELS[lead.source as keyof typeof SOURCE_LABELS] || lead.source}</span>
+                  </div>
+
+                  {/* Agent & Budget */}
+                  <div className="md:col-span-3 flex flex-col">
+                    <span className="text-xs text-foreground font-medium flex items-center gap-1.5">
+                      <User size={12} className="text-muted-foreground" /> {lead.agents?.name || 'Unassigned'}
+                    </span>
+                    {lead.budget && (
+                      <span className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
+                        <IndianRupee size={10} className="text-muted-foreground" /> {lead.budget}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="md:col-span-2 flex items-center justify-end gap-2" onClick={e => e.stopPropagation()}>
+                    <a href={`tel:${lead.phone}`} className="p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5 group" title="Call">
+                      <PhoneCall size={14} className="text-blue-400 group-hover:text-blue-300 transition-colors" />
+                    </a>
+                    <a href={`https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors border border-white/5 group" title="WhatsApp">
+                      <MessageCircle size={14} className="text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                    </a>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {filtered.length === 0 && (
+          <div className="text-center py-16 bg-[#111827] rounded-xl border border-white/10">
+            <p className="text-sm text-muted-foreground">No leads found matching your criteria.</p>
+          </div>
+        )}
       </div>
 
       {/* Pagination */}

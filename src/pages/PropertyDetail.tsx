@@ -28,7 +28,7 @@ export default function PropertyDetail() {
   const createReservation = useCreateReservation();
   const confirmReservation = useConfirmReservation();
 
-  const { data: similarProperties } = useSimilarProperties(property?.area, property?.city, propertyId);
+  const { data: similarProperties } = useSimilarProperties(propertyId);
   const requestVisit = useRequestVisit();
 
   const [actionMode, setActionMode] = useState<ActionMode>(null);
@@ -123,7 +123,7 @@ export default function PropertyDetail() {
       key: 'rzp_test_LzJmKsdhfksdfh', // Test key
       amount: 1000 * 100, // ₹1,000 in paise
       currency: 'INR',
-      name: 'Gharpayy',
+      name: 'PG Shaala',
       description: `Bed Reservation at ${property.name}`,
       handler: async function (response: any) {
         toast.loading('Verifying payment...', { id: 'payment-verification' });
@@ -208,10 +208,10 @@ export default function PropertyDetail() {
             <ArrowLeft size={16} /> Back to search
           </button>
           <button onClick={() => navigate('/')} className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-accent flex items-center justify-center">
-              <span className="text-accent-foreground font-bold text-xs">G</span>
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-[10px]">PG</span>
             </div>
-            <span className="font-semibold text-sm">Gharpayy</span>
+            <span className="font-semibold text-sm">PG SHAALA</span>
           </button>
         </div>
       </header>
@@ -253,7 +253,7 @@ export default function PropertyDetail() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 {(property as any).is_verified && (
-                  <Badge variant="secondary" className="text-[11px] gap-1"><Shield size={11} className="text-success" /> Verified by Gharpayy</Badge>
+                  <Badge variant="secondary" className="text-[11px] gap-1"><Shield size={11} className="text-success" /> Verified by PG Shaala</Badge>
                 )}
                 {property.gender_allowed && property.gender_allowed !== 'any' && (
                   <Badge variant="secondary" className="text-[11px] capitalize">{property.gender_allowed} only</Badge>
@@ -374,7 +374,7 @@ export default function PropertyDetail() {
 
             {/* Confidence Signals */}
             <div className="rounded-xl bg-secondary/50 p-5 flex flex-wrap gap-6">
-              {(property as any).is_verified && <div className="flex items-center gap-2 text-sm"><Shield size={16} className="text-success" /> Verified by Gharpayy</div>}
+              {(property as any).is_verified && <div className="flex items-center gap-2 text-sm"><Shield size={16} className="text-success" /> Verified by PG Shaala</div>}
               <div className="flex items-center gap-2 text-sm"><Clock size={16} className="text-muted-foreground" /> Updated recently</div>
               <div className="flex items-center gap-2 text-sm"><Users size={16} className="text-muted-foreground" /> {vacantBeds.length} beds remaining</div>
             </div>
@@ -426,7 +426,7 @@ export default function PropertyDetail() {
                   <Button variant="outline" className="w-full justify-start gap-3 h-12" onClick={() => setChatOpen(true)}>
                     <MessageCircle size={18} className="text-info" />
                     <div className="text-left">
-                      <p className="text-sm font-medium">Chat with Gharpayy</p>
+                      <p className="text-sm font-medium">Chat with PG Shaala</p>
                       <p className="text-[11px] text-muted-foreground">Get instant answers</p>
                     </div>
                   </Button>
@@ -555,7 +555,7 @@ export default function PropertyDetail() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle>Book a Virtual Tour</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">See the property from the comfort of your home. A Gharpayy agent will give you a live video walkthrough.</p>
+            <p className="text-sm text-muted-foreground">See the property from the comfort of your home. A PG Shaala agent will give you a live video walkthrough.</p>
             <div><Label>Your Name</Label><Input placeholder="Full name" value={tourForm.name} onChange={e => setTourForm(v => ({ ...v, name: e.target.value }))} /></div>
             <div><Label>Phone / WhatsApp</Label><Input placeholder="+91..." value={tourForm.phone} onChange={e => setTourForm(v => ({ ...v, phone: e.target.value }))} /></div>
             <div><Label>Preferred Slot</Label>

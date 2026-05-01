@@ -160,7 +160,7 @@ export default function OwnerPortal() {
             <AlertTriangle size={40} className="mx-auto mb-4 text-warning" />
             <h2 className="text-xl font-semibold mb-2">No Owner Account Found</h2>
             <p className="text-sm text-muted-foreground mb-6">
-              Your account is not linked to any property owner profile. Please contact the Gharpayy team to set up your owner account.
+              Your account is not linked to any property owner profile. Please contact the PG Shaala team to set up your owner account.
             </p>
             <div className="flex gap-3 justify-center">
               <Button variant="outline" onClick={() => navigate('/')}>Go Home</Button>
@@ -208,11 +208,11 @@ export default function OwnerPortal() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                <span className="text-accent-foreground font-bold text-sm">G</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-sm">
+                <span className="text-white font-bold text-xs">PG</span>
               </div>
               <div>
-                <span className="font-semibold text-base tracking-tight text-foreground">Gharpayy</span>
+                <span className="font-semibold text-base tracking-tight text-foreground">PG SHAALA</span>
                 <span className="text-xs text-muted-foreground ml-2">Owner Portal</span>
               </div>
             </div>

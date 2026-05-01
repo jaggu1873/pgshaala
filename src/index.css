@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Outfit:wght@100..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,106 +6,77 @@
 
 @layer base {
   :root {
-    /* Ultra-clean neutral base — Linear/Stripe inspired */
-    --background: 0 0% 99%;
-    --foreground: 220 14% 10%;
+    /* Modern SaaS Palette - Stripe/Linear Style */
+    --background: 222 47% 11%; /* #0f172a */
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 14% 10%;
+    --card: 221 39% 11%; /* #111827 */
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 14% 10%;
+    --popover: 221 39% 11%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 220 14% 10%;
-    --primary-foreground: 0 0% 100%;
+    /* Luxury Accent: Burnished Gold */
+    --primary: 43 50% 55%;
+    --primary-foreground: 220 25% 4%;
 
-    --secondary: 220 14% 96.5%;
-    --secondary-foreground: 220 14% 30%;
+    --secondary: 220 15% 12%;
+    --secondary-foreground: 210 10% 80%;
 
-    --muted: 220 10% 95%;
-    --muted-foreground: 220 8% 46%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 25 95% 53%;
+    --accent: 43 50% 50%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    /* 3 state colors — the only colors that matter */
-    --success: 152 60% 40%;
+    /* Sophisticated State Colors */
+    --success: 150 40% 40%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 35 80% 45%;
     --warning-foreground: 0 0% 100%;
 
-    --info: 217 80% 56%;
+    --info: 210 60% 50%;
     --info-foreground: 0 0% 100%;
 
-    --border: 220 10% 93%;
-    --input: 220 10% 93%;
-    --ring: 220 14% 10%;
+    --border: 215 28% 17%; /* #1e293b equivalent to white/10 over dark */
+    --input: 215 28% 17%;
+    --ring: 222 47% 55%; /* Blue ring for focus */
 
-    --radius: 0.75rem;
+    --radius: 0.75rem; /* xl corners for modern feel */
 
-    /* Sidebar — refined dark */
-    --sidebar-bg: 220 16% 7%;
-    --sidebar-fg: 220 10% 50%;
-    --sidebar-active: 25 95% 53%;
-    --sidebar-active-fg: 0 0% 100%;
-    --sidebar-hover: 220 14% 11%;
-    --sidebar-border: 220 14% 12%;
-
-    --sidebar-background: 220 16% 7%;
-    --sidebar-foreground: 220 10% 50%;
-    --sidebar-primary: 25 95% 53%;
+    /* Sidebar - Matches App Background */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 220 10% 60%;
+    --sidebar-primary: 222 47% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 11%;
-    --sidebar-accent-foreground: 220 10% 75%;
-    --sidebar-border: 220 14% 12%;
-    --sidebar-ring: 25 95% 53%;
+    --sidebar-accent: 215 28% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 215 28% 17%;
+    --sidebar-ring: 43 50% 55%;
 
-    /* Pipeline colors — desaturated, neutral */
-    --pipeline-new: 217 50% 58%;
-    --pipeline-contacted: 262 35% 55%;
-    --pipeline-requirement: 38 50% 50%;
-    --pipeline-suggested: 25 50% 50%;
-    --pipeline-visit-scheduled: 173 40% 42%;
-    --pipeline-visit-completed: 152 40% 42%;
-    --pipeline-booked: 152 50% 35%;
-    --pipeline-lost: 0 40% 50%;
-
-    --font-display: 'Inter', sans-serif;
-    --font-body: 'Inter', sans-serif;
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Outfit', sans-serif;
   }
 
-  .dark {
-    --background: 220 16% 5%;
-    --foreground: 220 10% 92%;
-    --card: 220 16% 7.5%;
-    --card-foreground: 220 10% 92%;
-    --popover: 220 16% 7.5%;
-    --popover-foreground: 220 10% 92%;
-    --primary: 0 0% 100%;
-    --primary-foreground: 220 16% 7%;
-    --secondary: 220 14% 11%;
-    --secondary-foreground: 220 10% 75%;
-    --muted: 220 14% 12%;
-    --muted-foreground: 220 8% 46%;
-    --accent: 25 95% 53%;
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 220 30% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 10%;
+    --primary: 43 50% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 10% 95%;
+    --secondary-foreground: 220 10% 30%;
+    --accent: 43 50% 45%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 55% 45%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 14% 12%;
-    --input: 220 14% 12%;
-    --ring: 0 0% 100%;
-    --sidebar-background: 220 16% 4%;
-    --sidebar-foreground: 220 10% 48%;
-    --sidebar-primary: 25 95% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 8%;
-    --sidebar-accent-foreground: 220 10% 80%;
-    --sidebar-border: 220 14% 9%;
-    --sidebar-ring: 25 95% 53%;
+    --border: 220 10% 90%;
+    --input: 220 10% 90%;
+    --sidebar-background: 220 30% 8%;
+    --sidebar-foreground: 220 10% 70%;
   }
 }
 
@@ -116,16 +87,13 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
-    font-feature-settings: 'cv11', 'ss01';
-    font-optical-sizing: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    letter-spacing: -0.011em;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.025em;
-    font-weight: 600;
+    letter-spacing: -0.01em;
+    font-weight: 700;
   }
 }
 
@@ -150,17 +118,17 @@
   }
 
   .sidebar-link {
-    @apply flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-150;
+    @apply flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150;
     color: hsl(var(--sidebar-fg));
   }
   .sidebar-link:hover {
-    background: hsl(var(--sidebar-hover));
-    color: hsl(var(--sidebar-active-fg));
+    background: hsl(var(--sidebar-accent));
+    color: hsl(var(--sidebar-accent-foreground));
   }
   .sidebar-link.active {
-    background: hsl(var(--sidebar-active));
-    color: hsl(var(--sidebar-active-fg));
-    box-shadow: 0 1px 4px hsl(var(--sidebar-active) / 0.25);
+    background: hsl(var(--sidebar-accent));
+    color: hsl(var(--sidebar-accent-foreground));
+    box-shadow: inset 2px 0 0 hsl(var(--sidebar-primary));
   }
 
   .badge-pipeline {
@@ -171,8 +139,8 @@
   .stat-down { @apply text-destructive; }
 
   .glass {
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    /* Removed heavy blur to improve performance and match SaaS aesthetic */
+    @apply bg-background/95 border-border;
   }
 
   /* Status colors — only 3 states */

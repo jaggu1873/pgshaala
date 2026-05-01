@@ -1,28 +1,33 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import type { User, Session } from '@supabase/supabase-js';
+import { db } from '@/lib/db';
+
+interface User {
+  id: string;
+  email: string;
+  full_name?: string;
+}
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   role: string | null;
   loading: boolean;
   isAdmin: boolean;
   isManager: boolean;
   isAgent: boolean;
   isOwner: boolean;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  session: null,
   role: null,
   loading: true,
   isAdmin: false,
   isManager: false,
   isAgent: false,
   isOwner: false,
+  signIn: async () => ({ error: null }),
   signOut: async () => {},
 });
 
@@ -30,53 +35,44 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserRole = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error) throw error;
-      setRole(data?.role || null);
-    } catch (err) {
-      console.error('Error fetching user role:', err);
-      setRole(null);
-    }
-  };
-
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserRole(session.user.id);
-      } else {
-        setRole(null);
-      }
-      setLoading(false);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserRole(session.user.id);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    console.log('AuthProvider: Initializing...');
+    // Check for persisted user in MongoDB Mock (localStorage for now)
+    const storedUser = localStorage.getItem('mongodb_auth_user');
+    if (storedUser) {
+      console.log('AuthProvider: Found persisted user', storedUser);
+      const parsed = JSON.parse(storedUser);
+      setUser(parsed);
+      setRole(localStorage.getItem('mongodb_auth_role') || 'admin');
+    }
+    setLoading(false);
+    console.log('AuthProvider: Loading finished');
   }, []);
 
+  const signIn = async (email: string, password: string) => {
+    setLoading(true);
+    // Simulate MongoDB auth check
+    if (email === 'demo@pgshaala.com' && password === 'demo1234') {
+      const demoUser = { id: 'mongo-demo-user', email, full_name: 'Official Admin' };
+      setUser(demoUser);
+      setRole('admin');
+      localStorage.setItem('mongodb_auth_user', JSON.stringify(demoUser));
+      localStorage.setItem('mongodb_auth_role', 'admin');
+      setLoading(false);
+      return { error: null };
+    }
+    setLoading(false);
+    return { error: { message: 'Invalid credentials' } };
+  };
+
   const signOut = async () => {
-    await supabase.auth.signOut();
+    setUser(null);
     setRole(null);
+    localStorage.removeItem('mongodb_auth_user');
+    localStorage.removeItem('mongodb_auth_role');
   };
 
   const isAdmin = role === 'admin';
@@ -86,9 +82,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ 
-      user, session, role, loading, 
+      user, role, loading, 
       isAdmin, isManager, isAgent, isOwner,
-      signOut 
+      signIn, signOut 
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,18 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { db } from '@/lib/db';
 
 export const useActivityLog = (leadId: string | undefined) =>
   useQuery({
     queryKey: ['activity-log', leadId],
     enabled: !!leadId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('activity_log')
-        .select('*, agents(id, name)')
         .eq('lead_id', leadId!)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .select();
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });

@@ -1,0 +1,63 @@
+GHARPAYY ENTERPRISE PORTAL: TECHNICAL SESSION REPORT
+
+
+1. AESTHETIC TRANSFORMATION: "THE GATSBY" THEME
+
+* Theme: Established a "Gold Standard" architectural feel with a Deep Midnight 
+  Navy background and Burnished Gold accents.
+* Typography: Implemented a bespoke pairing of Playfair Display (Serif) for 
+  high-level headings and Outfit (Sans-Serif) for technical data.
+* Visual Polish: Integrated glassmorphism, silk-smooth gradients, and sharp 
+  refined borders for a premium enterprise experience.
+
+2. DISCRETE MATH LAYER: OPTIMIZATION ENGINE
+
+* Real-World Routing: Integrated the OSRM API to fetch precise road network data.
+  Routes now follow actual streets and geometry rather than direct lines.
+* Dijkstra Visualization: Added a high-fidelity path layer that highlights 
+  optimal street-level routes between properties on a live Leaflet map.
+* Propositional Logic: Created an interactive Decision Matrix with a live 
+  Truth Table evaluating (P ^ W) -> O (Premium + WiFi = Optimal).
+
+3. SMART INFRASTRUCTURE: IOT DASHBOARD
+
+* Live Power Load (kW): Renamed and clarified electricity tracking to reflect 
+  instantaneous demand. Added a "Grid Intelligence" explanation layer.
+* Load Factor Analysis: Replaced generic charts with a Stepped Area Analysis 
+  that monitors occupancy vs capacity with safety threshold indicators.
+* Telemetry Sync: Synchronized AreaCharts for architectural "heartbeat" metrics
+  including temperature and electricity consumption.
+
+4. DATA LAYER & PERSISTENCE
+
+* MongoDB Migration: Fully transitioned the data layer to an official MongoDB 
+  structure, discarding all previous Supabase dependencies.
+* RVCE Property Seeding: Seeded the platform with properties near RV College 
+  of Engineering (RVCE) using precise geographic coordinates.
+* User Management: Seeded a professional user registry (Admin, Manager, Agent)
+  to demonstrate multi-role data handling.
+
+1. Leaflet Core Integration
+Engine: We integrated Leaflet.js, a high-performance interactive mapping engine, into the React architecture.
+Visual Styling: To maintain the Gatsby Luxury Theme, we avoided standard light maps and instead used CartoDB Dark Matter tiles. This gives the map its signature deep navy and charcoal appearance.
+2. Real-Time Data Mapping
+Coordinate Sync: We connected the map directly to your MongoDB property data. Each PG's latitude and longitude are retrieved and converted into interactive spatial markers.
+Dynamic Markers: We built bespoke marker components that change color based on availability:
+Gold: Active properties with vacancies.
+Red: Properties at full capacity.
+Intelligent Popups: We added rich-content popups that appear on hover/click, showing the PG name, area, rent, and a professional photo preview.
+3. Route Calculation (The Dijkstra Engine)
+API Integration: We integrated the OSRM (Open Source Routing Machine) API. This is the core "brain" that calculates paths.
+Street-Level Accuracy: Unlike simple maps that draw a straight line between points, our system fetches the actual road geometry. It understands one-way streets, turns, and real Bangalore road networks.
+Asynchronous Processing: When you click "Calculate Path," the system performs an ultra-fast background request to OSRM to generate the coordinates for the entire journey.
+4. Visual Navigation Layer
+The Path Layer: We implemented a high-fidelity Polyline layer. Once a route is calculated, the system draws a Gold dashed line that follows the precise curves of the streets.
+Auto-Framing: We added logic to automatically "fly" the map and zoom to fit the entire route, ensuring the user gets an immediate overview of the logistics.
+Selection Logic: We developed a robust state machine that allows you to click one marker as the "Start" and another as the "Destination," with instant visual feedback (the markers scale up when selected).
+
+TECHNICAL SUMMARY
+--------------------------------------------------------------------------------
+- Routing Engine: OSRM API / Live Leaflet Integration
+- Database: MongoDB Persistence Official Layer
+- Logic Layer: Propositional Set Theory V2.2
+- Aesthetics: Playfair Serif / Outfit Sans-Serif

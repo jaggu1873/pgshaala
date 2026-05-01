@@ -13,7 +13,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const prompt = `You are a WhatsApp sales agent for Gharpayy, a PG/hostel booking platform in India.
+    const prompt = `You are a WhatsApp sales agent for PG Shaala, a PG/hostel booking platform in India.
 
 LEAD CONTEXT:
 - Name: ${leadName}

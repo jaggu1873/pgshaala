@@ -56,10 +56,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                <span className="text-accent-foreground font-bold text-sm">G</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-sm">
+                <span className="text-white font-bold text-xs">PG</span>
               </div>
-              <span className="font-semibold text-lg tracking-tight text-foreground">Gharpayy</span>
+              <span className="font-semibold text-lg tracking-tight text-foreground">PG SHAALA</span>
             </div>
             <div className="hidden md:flex items-center gap-6 text-sm text-muted-foreground">
               <button onClick={() => navigate('/explore')} className="hover:text-foreground transition-colors font-medium">Explore PGs</button>
@@ -242,7 +242,7 @@ export default function LandingPage() {
 
       {/* How it works */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground text-center mb-12">How Gharpayy works</h2>
+        <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground text-center mb-12">How PG Shaala works</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {[
             { step: '01', title: 'Search & Discover', desc: 'Browse verified PGs by area, budget, and preferences. Every listing is real and up-to-date.' },
@@ -264,7 +264,7 @@ export default function LandingPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="rounded-2xl bg-accent/5 border border-accent/10 p-10 sm:p-16 text-center">
           <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground mb-3">Ready to find your new home?</h2>
-          <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">Join 5,000+ residents who found their perfect PG through Gharpayy.</p>
+          <p className="text-sm text-muted-foreground mb-8 max-w-md mx-auto">Join 5,000+ residents who found their perfect PG through PG Shaala.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button onClick={() => navigate('/explore')} className="h-12 px-8 bg-accent hover:bg-accent/90 text-accent-foreground text-base rounded-xl">
               Explore PGs <ArrowRight size={18} className="ml-1" />
@@ -281,13 +281,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-accent flex items-center justify-center">
-                <span className="text-accent-foreground font-bold text-2xs">G</span>
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-sm">
+                <span className="text-white font-bold text-[9px]">PG</span>
               </div>
-              <span className="font-semibold text-sm">Gharpayy</span>
+              <span className="font-semibold text-sm">PG SHAALA</span>
               <span className="text-2xs text-muted-foreground">· India's smartest PG platform</span>
             </div>
-            <p className="text-2xs text-muted-foreground">© 2026 Gharpayy. All rights reserved.</p>
+            <p className="text-2xs text-muted-foreground">© 2026 PG Shaala. All rights reserved.</p>
           </div>
         </div>
       </footer>

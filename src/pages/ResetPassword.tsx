@@ -36,10 +36,10 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-[400px]">
         <div className="flex items-center gap-2.5 mb-8">
-          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-display font-bold">G</span>
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-md shadow-purple-500/20">
+            <span className="text-white font-display font-bold text-sm">PG</span>
           </div>
-          <h1 className="font-display font-bold text-lg text-foreground">Gharpayy</h1>
+          <h1 className="font-display font-bold text-lg text-foreground">PG SHAALA</h1>
         </div>
         <h2 className="font-display font-bold text-2xl text-foreground mb-1">Set new password</h2>
         <p className="text-sm text-muted-foreground mb-6">Choose a strong password for your account</p>

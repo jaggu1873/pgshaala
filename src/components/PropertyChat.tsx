@@ -20,7 +20,7 @@ const FAQ_RESPONSES: Record<string, string> = {
   deposit: 'Security deposit is typically 1-2 months rent, refundable at move-out. The exact amount will be shared during booking confirmation.',
   'move-in': 'You can move in as early as 24 hours after booking confirmation! Just select your preferred move-in date during the pre-booking process.',
   laundry: 'Laundry services vary by property. Most PGs have washing machines available, and some offer professional laundry service at an extra charge.',
-  security: 'All Gharpayy verified PGs have 24/7 security with CCTV surveillance, biometric/key card access, and security guards.',
+  security: 'All PG Shaala verified PGs have 24/7 security with CCTV surveillance, biometric/key card access, and security guards.',
   cleaning: 'Room cleaning is provided 2-3 times per week at most properties. Common areas are cleaned daily.',
   rules: 'Most PGs have standard house rules around visitor timings and noise levels. Each property page lists specific rules. We recommend checking before booking.',
   available: 'You can see real-time bed availability in the "Available Rooms" section above. Green beds are available for instant booking!',
@@ -47,7 +47,7 @@ interface PropertyChatProps {
 export default function PropertyChat({ propertyName, propertyId, isOpen, onClose }: PropertyChatProps) {
   const sendMessageHook = useSendMessage();
   const [userInfo, setUserInfo] = useState<{ name: string; phone: string } | null>(() => {
-    const saved = localStorage.getItem('gharpayy_user_info');
+    const saved = localStorage.getItem('pgshaala_user_info');
     return saved ? JSON.parse(saved) : null;
   });
   const [showIdentForm, setShowIdentForm] = useState(false);
@@ -99,7 +99,7 @@ export default function PropertyChat({ propertyName, propertyId, isOpen, onClose
       const botMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: auto ? 'bot' : 'agent',
-        text: auto || "Thanks for your question! I've shared your request with our team. A Gharpayy housing advisor will respond shortly (usually within 2 mins) on WhatsApp.",
+        text: auto || "Thanks for your question! I've shared your request with our team. A PG Shaala housing advisor will respond shortly (usually within 2 mins) on WhatsApp.",
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages(prev => [...prev, botMsg]);
@@ -118,7 +118,7 @@ export default function PropertyChat({ propertyName, propertyId, isOpen, onClose
     if (name && phone) {
       const info = { name, phone };
       setUserInfo(info);
-      localStorage.setItem('gharpayy_user_info', JSON.stringify(info));
+      localStorage.setItem('pgshaala_user_info', JSON.stringify(info));
       setShowIdentForm(false);
       if (input) sendMessage(input);
     }
@@ -137,11 +137,11 @@ export default function PropertyChat({ propertyName, propertyId, isOpen, onClose
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-secondary/30">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center">
-                <span className="text-accent-foreground font-bold text-xs">G</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-sm">
+                <span className="text-white font-bold text-xs">PG</span>
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">Gharpayy Support</p>
+                <p className="text-sm font-semibold text-foreground">PG Shaala Support</p>
                 <p className="text-[10px] text-success flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-success inline-block" /> Online
                 </p>

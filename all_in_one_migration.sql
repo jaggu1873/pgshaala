@@ -789,7 +789,9 @@ $$;
 CREATE TRIGGER trg_booking_cancelled AFTER UPDATE ON public.bookings
   FOR EACH ROW EXECUTE FUNCTION public.on_booking_cancelled();
 
--- The correct trigger 'lead_auto_score' was already created earlier with proper column constraints.
+-- Also attach the missing triggers from earlier
+CREATE TRIGGER trg_auto_score_lead AFTER INSERT OR UPDATE ON public.leads
+  FOR EACH ROW EXECUTE FUNCTION public.auto_score_lead();
 
 CREATE TRIGGER trg_log_lead_status AFTER UPDATE ON public.leads
   FOR EACH ROW EXECUTE FUNCTION public.log_lead_status_change();
@@ -1314,7 +1316,7 @@ USING (auth.uid() = user_id);
 DROP POLICY IF EXISTS "Admins have full access to roles" ON public.user_roles;
 CREATE POLICY "Admins have full access to roles" 
 ON public.user_roles TO authenticated
-USING (public.get_my_role() = 'admin');
+USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
 
 -- Update existing tables with RLS policies
 
@@ -1374,7 +1376,7 @@ DO $$
 DECLARE
   demo_user_id uuid;
 BEGIN
-  SELECT id INTO demo_user_id FROM auth.users WHERE email = 'demo@gharpayy.com' LIMIT 1;
+  SELECT id INTO demo_user_id FROM auth.users WHERE email = 'demo@pgshaala.com' LIMIT 1;
   IF demo_user_id IS NOT NULL THEN
     INSERT INTO public.user_roles (user_id, role)
     VALUES (demo_user_id, 'admin')
@@ -1737,27 +1739,23 @@ VALUES ('property_images', 'property_images', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Allows anyone to view property images (public bucket)
-DROP POLICY IF EXISTS "Public Access" ON storage.objects;
 CREATE POLICY "Public Access" 
 ON storage.objects FOR SELECT 
 TO public 
 USING (bucket_id = 'property_images');
 
 -- Allows authenticated staff to insert/upload images
-DROP POLICY IF EXISTS "Staff Uploads" ON storage.objects;
 CREATE POLICY "Staff Uploads" 
 ON storage.objects FOR INSERT 
 TO authenticated 
 WITH CHECK (bucket_id = 'property_images');
 
 -- Allows authenticated staff to update/delete images
-DROP POLICY IF EXISTS "Staff Updates" ON storage.objects;
 CREATE POLICY "Staff Updates"
 ON storage.objects FOR UPDATE
 TO authenticated
 USING (bucket_id = 'property_images');
 
-DROP POLICY IF EXISTS "Staff Deletions" ON storage.objects;
 CREATE POLICY "Staff Deletions"
 ON storage.objects FOR DELETE
 TO authenticated

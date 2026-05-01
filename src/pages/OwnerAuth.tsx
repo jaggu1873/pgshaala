@@ -81,7 +81,7 @@ const OwnerAuth = () => {
         .maybeSingle();
 
       if (ownerError || !ownerProfile) {
-        toast.error('No owner profile found. Please contact the Gharpayy team to set up your account.');
+        toast.error('No owner profile found. Please contact the PG Shaala team to set up your account.');
         await supabase.auth.signOut();
         setLoading(false);
         setVerifyingOwner(false);
@@ -127,7 +127,7 @@ const OwnerAuth = () => {
               <Building2 size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="font-display font-bold text-lg text-white tracking-tight">Gharpayy</h1>
+              <h1 className="font-display font-bold text-lg text-white tracking-tight">PG SHAALA</h1>
               <p className="text-[11px] text-white/40">Owner Portal</p>
             </div>
           </div>
@@ -171,7 +171,7 @@ const OwnerAuth = () => {
           </div>
         </motion.div>
 
-        <p className="relative z-10 text-[10px] text-white/20">© 2026 Gharpayy. All rights reserved.</p>
+        <p className="relative z-10 text-[10px] text-white/20">© 2026 PG Shaala. All rights reserved.</p>
 
         {/* Background decorative elements */}
         <div
@@ -198,7 +198,7 @@ const OwnerAuth = () => {
               <Building2 size={18} className="text-white" />
             </div>
             <div>
-              <h1 className="font-display font-bold text-base text-foreground tracking-tight">Gharpayy</h1>
+              <h1 className="font-display font-bold text-base text-foreground tracking-tight">PG SHAALA</h1>
               <p className="text-[10px] text-muted-foreground">Owner Portal</p>
             </div>
           </div>
@@ -335,8 +335,8 @@ const OwnerAuth = () => {
           >
             <p className="text-2xs text-muted-foreground leading-relaxed">
               <span className="font-medium text-foreground">Don't have an account?</span>{' '}
-              Owner accounts are created by the Gharpayy team when your property is onboarded. Contact your property manager or reach out to{' '}
-              <span className="text-emerald-600 dark:text-emerald-400">support@gharpayy.com</span>{' '}
+              Owner accounts are created by the PG Shaala team when your property is onboarded. Contact your property manager or reach out to{' '}
+              <span className="text-emerald-600 dark:text-emerald-400">support@pgshaala.com</span>{' '}
               for access.
             </p>
           </motion.div>

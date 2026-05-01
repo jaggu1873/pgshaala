@@ -138,10 +138,10 @@ export default function Explore() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-14">
             <button onClick={() => navigate('/')} className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-accent flex items-center justify-center">
-                <span className="text-accent-foreground font-bold text-xs">G</span>
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-sm">
+                <span className="text-white font-bold text-[10px]">PG</span>
               </div>
-              <span className="font-semibold text-base tracking-tight text-foreground">Gharpayy</span>
+              <span className="font-semibold text-base tracking-tight text-foreground">PG SHAALA</span>
             </button>
             <div className="hidden md:flex items-center gap-5 text-sm text-muted-foreground">
               <button className="text-foreground font-medium">Explore PGs</button>
