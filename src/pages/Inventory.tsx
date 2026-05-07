@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useInventoryOSData } from '@/hooks/useInventoryData';
-import { Search, ChevronDown, CalendarDays, FileText, DollarSign, MapPin, Grid2X2, List } from 'lucide-react';
+import { Search, ChevronDown, CalendarDays, FileText, DollarSign, MapPin, Grid2X2, List, Image } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Inventory = () => {
@@ -193,18 +193,36 @@ const Inventory = () => {
 
                     <div className="p-4 border-t border-rose-500/10 flex items-center justify-between bg-card">
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="h-9 px-4 rounded-xl font-semibold text-xs border-2 shadow-sm flex gap-2">
-                          <CalendarDays size={14} /> TOUR
-                        </Button>
+                        {p.virtual_tour_link ? (
+                          <Button asChild variant="outline" size="sm" className="h-9 px-4 rounded-xl font-semibold text-xs border-2 shadow-sm flex gap-2 border-info/30 text-info hover:bg-info/10">
+                            <a href={p.virtual_tour_link} target="_blank" rel="noreferrer">
+                              <Image size={14} /> TOUR
+                            </a>
+                          </Button>
+                        ) : (
+                          <Button variant="outline" size="sm" className="h-9 px-4 rounded-xl font-semibold text-xs border-2 shadow-sm flex gap-2 opacity-50 cursor-not-allowed" disabled>
+                            <Image size={14} /> TOUR
+                          </Button>
+                        )}
+                        
                         <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-2 shadow-sm">
                           <FileText size={14} />
                         </Button>
                         <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-2 shadow-sm">
                           <DollarSign size={14} />
                         </Button>
-                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-2 shadow-sm">
-                          <MapPin size={14} />
-                        </Button>
+                        
+                        {p.google_maps_link ? (
+                          <Button asChild variant="outline" size="icon" className="h-9 w-9 rounded-xl border-2 shadow-sm border-primary/30 text-primary hover:bg-primary/10">
+                            <a href={p.google_maps_link} target="_blank" rel="noreferrer">
+                              <MapPin size={14} />
+                            </a>
+                          </Button>
+                        ) : (
+                          <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-2 shadow-sm opacity-50 cursor-not-allowed" disabled>
+                            <MapPin size={14} />
+                          </Button>
+                        )}
                       </div>
                       <Button variant="link" className="text-xs text-muted-foreground hover:text-foreground">
                         Details

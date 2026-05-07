@@ -250,27 +250,10 @@ const IoTDashboard = () => {
                     )}
                   </div>
                   <h3 className="text-2xl font-display font-bold tracking-tight text-white mt-1">{selectedPg.name}</h3>
-                  <div className="flex items-center gap-4 mt-2">
-                    {selectedPg.google_maps_link && (
-                      <a 
-                        href={selectedPg.google_maps_link} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="text-[10px] font-bold text-primary hover:text-white flex items-center gap-1.5 bg-primary/10 px-3 py-1.5 rounded-full transition-all border border-primary/20"
-                      >
-                        <MapPin size={11} /> View on Maps
-                      </a>
-                    )}
-                    {selectedPg.virtual_tour_link && (
-                      <a 
-                        href={selectedPg.virtual_tour_link} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="text-[10px] font-bold text-info hover:text-white flex items-center gap-1.5 bg-info/10 px-3 py-1.5 rounded-full transition-all border border-info/20"
-                      >
-                        <Image size={11} /> Images & Videos
-                      </a>
-                    )}
+                  <div className="flex items-center gap-3 mt-3">
+                    <Badge variant="secondary" className="bg-white/5 text-[10px] text-muted-foreground border-white/10">
+                      {selectedPg.rooms?.length || 0} Instrumented Rooms
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -372,12 +355,6 @@ const IoTDashboard = () => {
                       <div className="h-[320px]">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={chartData}>
-                            <defs>
-                              <linearGradient id="gtTemp" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%"  stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                              </linearGradient>
-                            </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
                             <XAxis dataKey="time" tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)', fontWeight: 600 }} axisLine={false} tickLine={false} minTickGap={40} />
                             <YAxis tick={{ fontSize: 9, fill: 'rgba(255,255,255,0.3)', fontWeight: 600 }} axisLine={false} tickLine={false} />
@@ -385,7 +362,7 @@ const IoTDashboard = () => {
                               contentStyle={{ borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(15,15,20,0.95)', backdropFilter: 'blur(20px)' }}
                               itemStyle={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.1em' }}
                             />
-                            <Area type="monotone" dataKey="temp" name="Temp (°C)"    stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={1} fill="url(#gtTemp)" />
+                            <Area type="monotone" dataKey="temp" name="Temp (°C)"    stroke="hsl(var(--primary))" strokeWidth={3} fillOpacity={0.1} />
                             <Area type="monotone" dataKey="elec" name="Power (kW)"   stroke="hsl(var(--info))"    strokeWidth={2} fillOpacity={0} />
                           </AreaChart>
                         </ResponsiveContainer>
@@ -395,36 +372,65 @@ const IoTDashboard = () => {
                 </motion.div>
               </div>
 
-              {/* Side Panel: Smart Controls & Alerts */}
+              {/* Side Panel: Quick Links & Status */}
               <div className="space-y-8">
                 <Card className="border border-white/5 bg-card/40 backdrop-blur-3xl shadow-2xl rounded-2xl overflow-hidden">
                   <CardHeader className="border-b border-white/5 bg-white/[0.03] py-4">
                     <CardTitle className="text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 text-white/80">
-                      <Zap className="h-3.5 w-3.5 text-primary" /> Smart Room Controls
+                      <Zap className="h-3.5 w-3.5 text-primary" /> Property Quick Links
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-4">
+                    {selectedPg.google_maps_link ? (
+                      <a 
+                        href={selectedPg.google_maps_link} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="flex items-center justify-between p-4 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <MapPin className="h-5 w-5 text-primary" />
+                          <span className="text-xs font-bold text-white">Google Maps Location</span>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-primary group-hover:translate-x-1 transition-transform" />
+                      </a>
+                    ) : (
+                      <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-[10px] text-muted-foreground italic text-center">
+                        No Maps Link Available
+                      </div>
+                    )}
+
+                    {selectedPg.virtual_tour_link ? (
+                      <a 
+                        href={selectedPg.virtual_tour_link} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="flex items-center justify-between p-4 rounded-xl bg-info/10 border border-info/20 hover:bg-info/20 transition-all group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Image className="h-5 w-5 text-info" />
+                          <span className="text-xs font-bold text-white">Photos & Videos Drive</span>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-info group-hover:translate-x-1 transition-transform" />
+                      </a>
+                    ) : (
+                      <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-[10px] text-muted-foreground italic text-center">
+                        No Media Link Available
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card className="border border-white/5 bg-card/40 backdrop-blur-3xl shadow-2xl rounded-2xl overflow-hidden">
+                  <CardHeader className="border-b border-white/5 bg-white/[0.03] py-4">
+                    <CardTitle className="text-[10px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 text-white/80">
+                      <Activity className="h-3.5 w-3.5 text-success" /> Device Status
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
-                    <ControlRow 
-                      label="Climate Control (AC)" 
-                      icon={Fan} 
-                      active={roomStates[selectedRoomId]?.ac ?? false} 
-                      onClick={() => toggleDevice(selectedRoomId, 'ac', roomStates[selectedRoomId]?.ac ?? false)}
-                      color="bg-primary"
-                    />
-                    <ControlRow 
-                      label="Smart Lighting" 
-                      icon={Lightbulb} 
-                      active={roomStates[selectedRoomId]?.lights ?? true} 
-                      onClick={() => toggleDevice(selectedRoomId, 'lights', roomStates[selectedRoomId]?.lights ?? true)}
-                      color="bg-info"
-                    />
-                    <ControlRow 
-                      label="Digital Door Lock" 
-                      icon={roomStates[selectedRoomId]?.lock ?? true ? Lock : Unlock} 
-                      active={roomStates[selectedRoomId]?.lock ?? true} 
-                      onClick={() => toggleDevice(selectedRoomId, 'lock', roomStates[selectedRoomId]?.lock ?? true)}
-                      color="bg-success"
-                    />
+                    <StatusRow label="Climate Control (AC)" icon={Fan} status="Working" color="text-primary" />
+                    <StatusRow label="Smart Lighting" icon={Lightbulb} status="Working" color="text-info" />
+                    <StatusRow label="Digital Door Lock" icon={Lock} status="Secured" color="text-success" />
                   </CardContent>
                 </Card>
 
@@ -438,7 +444,7 @@ const IoTDashboard = () => {
                     <div className="space-y-4">
                       <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
                         <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
-                        <p className="text-[10px] font-bold text-white/70 uppercase">Smoke Detectors Active</p>
+                        <p className="text-[10px] font-bold text-white/70 uppercase">Smoke Detectors: Active</p>
                       </div>
                       <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
                         <div className="h-2 w-2 rounded-full bg-success animate-pulse" />
@@ -457,22 +463,21 @@ const IoTDashboard = () => {
   );
 };
 
-const ControlRow = ({ label, icon: Icon, active, onClick, color }: any) => (
-  <div className="flex items-center justify-between group">
+const StatusRow = ({ label, icon: Icon, status, color }: any) => (
+  <div className="flex items-center justify-between">
     <div className="flex items-center gap-3">
-      <div className={`p-2 rounded-lg ${active ? color + '/20' : 'bg-white/5'} transition-colors group-hover:scale-110 duration-300`}>
-        <Icon className={`h-4 w-4 ${active ? color.replace('bg-', 'text-') : 'text-muted-foreground'}`} />
+      <div className="p-2 rounded-lg bg-white/5">
+        <Icon className={`h-4 w-4 ${color}`} />
       </div>
       <span className="text-[11px] font-bold text-white/80">{label}</span>
     </div>
-    <button 
-      onClick={onClick}
-      className={`w-10 h-5 rounded-full p-1 transition-all duration-500 ${active ? color : 'bg-white/10'}`}
-    >
-      <div className={`w-3 h-3 bg-white rounded-full transition-all duration-500 ${active ? 'translate-x-5' : 'translate-x-0'}`} />
-    </button>
+    <div className="flex items-center gap-2">
+      <div className={`h-1.5 w-1.5 rounded-full bg-success animate-pulse`} />
+      <span className="text-[10px] font-bold uppercase tracking-wider text-success">{status}</span>
+    </div>
   </div>
 );
+
 
 const StatCard = ({ title, value, icon: Icon, color, trend, isAlert }: any) => (
   <Card className={`relative border ${isAlert ? 'border-destructive/30 bg-destructive/5' : 'border-white/5 bg-card/30'} backdrop-blur-2xl shadow-xl overflow-hidden group transition-all duration-500 rounded-2xl`}>
@@ -496,31 +501,5 @@ const StatCard = ({ title, value, icon: Icon, color, trend, isAlert }: any) => (
   </Card>
 );
 
-      </div>
-    </AppLayout>
-  );
-};
-
-const StatCard = ({ title, value, icon: Icon, color, trend }: any) => (
-  <Card className="relative border border-white/5 bg-card/30 backdrop-blur-2xl shadow-xl overflow-hidden group hover:border-primary/20 transition-all duration-500 rounded-2xl">
-    <CardContent className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">{title}</p>
-        <div className={`p-2.5 rounded-xl border border-white/5 transition-all duration-500 group-hover:scale-110`}>
-          <Icon className={`h-5 w-5 ${color} drop-shadow-[0_0_8px_currentColor]`} />
-        </div>
-      </div>
-      <div className="flex items-baseline gap-2">
-        <h3 className="text-3xl font-display font-bold tracking-tight">{value}</h3>
-      </div>
-      {trend && (
-        <p className="text-[9px] text-muted-foreground/50 mt-3 flex items-center gap-2 font-bold uppercase tracking-widest">
-          <Activity className="h-3 w-3 text-primary/40" /> {trend}
-        </p>
-      )}
-    </CardContent>
-    <div className="absolute bottom-0 left-0 h-[3px] w-0 group-hover:w-full transition-all duration-700 bg-primary shadow-[0_0_15px_hsl(var(--primary))]" />
-  </Card>
-);
-
 export default IoTDashboard;
+
